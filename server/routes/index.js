@@ -1,8 +1,8 @@
-var express = require('express');
-var router = express.Router();
+var express = require('express')
+var router = express.Router()
 
 router.get('/', function (req, res, next) {
-  res.render('index', { title: '时间的朋友' });
-});
+  res.render('index', { title: '进货宝' })
+})
 
-module.exports = router;
+module.exports = router

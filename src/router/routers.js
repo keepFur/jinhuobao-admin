@@ -42,108 +42,177 @@ export default [
     ]
   },
   {
-    path: '/blog',
-    name: 'blog',
+    path: '/goods',
+    name: 'goods',
     meta: {
-      icon: 'ios-document',
-      title: '博客管理'
+      icon: 'ios-apps',
+      title: '商品管理'
     },
     component: Main,
     children: [{
-      path: 'create_blog_page',
-      name: 'create_blog_page',
+      path: 'create_goods_page',
+      name: 'create_goods_page',
       meta: {
         icon: 'ios-add-circle',
-        title: '创建博客'
+        title: '添加商品'
       },
-      component: () => import('@/view/blog/create/create_blog.vue')
+      component: () => import('@/view/goods/create_goods.vue')
     },
     {
-      path: 'blog_list_page',
-      name: 'blog_list_page',
+      path: 'goods_list_page',
+      name: 'goods_list_page',
       meta: {
         icon: 'ios-list-box',
-        title: '博客列表'
+        title: '商品列表'
       },
-      component: () => import('@/view/blog/list/blog_list.vue')
+      component: () => import('@/view/goods/goods_list.vue')
     },
     {
-      path: 'view_blog_page/:id',
-      name: 'view_blog_page',
+      path: 'view_goods_page/:id',
+      name: 'view_goods_page',
       meta: {
         hideInMenu: true,
-        title: '阅读博客'
+        title: '商品查看'
       },
-      component: () => import('@/view/blog/list/view_blog.vue')
+      component: () => import('@/view/goods/view_goods.vue')
     },
     {
-      path: 'edit_blog_page/:id',
-      name: 'edit_blog_page',
+      path: 'edit_goods_page/:id',
+      name: 'edit_goods_page',
       meta: {
         hideInMenu: true,
-        title: '编辑博客'
+        title: '编辑商品'
       },
-      component: () => import('@/view/blog/list/edit_blog.vue')
+      component: () => import('@/view/goods/edit_goods.vue')
     }]
   },
   {
-    path: '/todo',
-    name: 'todo',
+    path: '/store',
+    name: 'store',
     meta: {
-      icon: 'ios-calendar',
-      title: '日程管理'
+      icon: 'md-appstore',
+      title: '商家管理'
     },
     component: Main,
     children: [
       {
-        path: 'todo_list_page',
-        name: 'todo_list_page',
+        path: 'create_store_page',
+        name: 'create_store_page',
+        meta: {
+          icon: 'ios-add-circle',
+          title: '添加商家'
+        },
+        component: () => import('@/view/store/store_list.vue')
+      },
+      {
+        path: 'store_list_page',
+        name: 'store_list_page',
         meta: {
           icon: 'ios-list-box',
-          title: '日程管理'
+          title: '商家列表'
         },
-        component: () => import('@/view/todo/list/todo_list.vue')
+        component: () => import('@/view/store/store_list.vue')
       }]
-  }, {
-    path: '/material',
-    name: 'material',
+  },
+  {
+    path: '/basedata',
+    name: 'basedata',
     meta: {
-      icon: 'ios-photos',
-      title: '素材管理'
+      icon: 'md-analytics',
+      title: '基础数据管理'
     },
     component: Main,
     children: [{
-      path: 'create_material_page',
-      name: 'create_material_page',
+      path: 'goods_type_list_page',
+      name: 'goods_type_list_page',
       meta: {
-        icon: 'ios-add-circle',
-        title: '创建素材'
+        icon: 'ios-cart',
+        title: '商品分类列表'
       },
-      component: () => import('@/view/material/create/create_material.vue')
+      component: () => import('@/view/basedata/goods_type_list.vue')
     },
     {
-      path: 'material_list_page',
-      name: 'material_list_page',
+      path: 'store_type_list_page',
+      name: 'store_type_list_page',
       meta: {
-        icon: 'ios-list-box',
-        title: '素材列表'
+        icon: 'ios-body',
+        title: '商家分类列表'
       },
-      component: () => import('@/view/material/list/material_list.vue')
+      component: () => import('@/view/basedata/goods_type_list.vue')
+    }]
+  },
+  {
+    path: '/money',
+    name: 'money',
+    meta: {
+      icon: 'logo-yen',
+      title: '财务管理'
+    },
+    component: Main,
+    children: [{
+      path: 'report_page',
+      name: 'report_page',
+      meta: {
+        icon: 'ios-stats',
+        title: '报表中心'
+      },
+      component: () => import('@/view/money/report_center.vue')
+    },
+    {
+      path: 'income_list_page',
+      name: 'income_list_page',
+      meta: {
+        icon: 'md-repeat',
+        title: '收支记录列表'
+      },
+      component: () => import('@/view/money/income_list.vue')
     }]
   },
   {
     path: '',
-    name: 'group',
+    name: 'order',
     component: Main,
     children: [
       {
-        path: 'group_page',
-        name: 'group_page',
+        path: 'order_list_page',
+        name: 'order_list_page',
         meta: {
-          icon: 'ios-basket',
-          title: '分组管理'
+          icon: 'md-list',
+          title: '订单列表'
         },
-        component: () => import('@/view/group/group.vue')
+        component: () => import('@/view/order/order_list.vue')
+      }
+    ]
+  },
+  {
+    path: '',
+    name: 'datas',
+    component: Main,
+    children: [
+      {
+        path: 'datas_page',
+        name: 'datas_page',
+        meta: {
+          icon: 'ios-analytics',
+          title: '运营分析'
+        },
+        component: () => import('@/view/ruing/ruing.vue')
+      }
+    ]
+  },
+  {
+    path: '',
+    name: 'todo',
+    component: Main,
+    children: [
+      {
+        path: 'todo_page',
+        name: 'todo_page',
+        meta: {
+          icon: 'md-time',
+          title: '待办事项'
+        },
+        component: () => import('@/view/todo/todo_list.vue')
       }
     ]
   },

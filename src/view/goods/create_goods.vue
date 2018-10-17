@@ -18,57 +18,60 @@
 </template>
 
 <script>
-import Editor from "_c/editor";
-import { createBlog } from "@/api/blog";
-import { readGroupList } from "@/api/group";
+import Editor from '_c/editor'
+import { createBlog } from '@/api/blog'
+import { readGroupList } from '@/api/group'
 export default {
-  name: "create_blog_page",
+  name: 'create_blog_page',
   components: {
     Editor
   },
-  data() {
+  data () {
     return {
       blogInfo: {
-        title: "",
+        title: '',
         groupId: 1,
         authorId: 1,
-        content: "尽情发挥吧。。。。"
+        content: '尽情发挥吧。。。。'
       },
       groupList: []
-    };
+    }
   },
-  mounted() {
-    this.readGroupList();
+  mounted () {
+    this.readGroupList()
   },
   methods: {
-    saveHandler() {
+    saveHandler () {
       createBlog(this.blogInfo).then(resData => {
         if (resData.data.ret === 0) {
-          this.$Message.success("操作成功");
+          this.$Message.success('操作成功')
           this.$router.push({
-            name: "blog_list_page"
-          });
+            name: 'blog_list_page'
+          })
         } else {
-          this.$Message.error(resData.data.msg);
+          this.$Message.error(resData.data.msg)
         }
-      });
+      })
     },
-    openChangerHandler(isOpen){
-      if(isOpen&& this.$refs.group_select.$children[1].$el.style.zIndex!==10002){
-        this.$refs.group_select.$children[1].$el.style.zIndex=10002;
+    openChangerHandler (isOpen) {
+      if (
+        isOpen &&
+        this.$refs.group_select.$children[1].$el.style.zIndex !== 10002
+      ) {
+        this.$refs.group_select.$children[1].$el.style.zIndex = 10002
       }
     },
-    readGroupList() {
+    readGroupList () {
       readGroupList({
         limit: 20,
         offset: 1,
         type: 1
       }).then(resData => {
         if (resData.data.ret === 0) {
-          this.groupList = resData.data.rows;
+          this.groupList = resData.data.rows
         }
-      });
+      })
     }
   }
-};
+}
 </script>
