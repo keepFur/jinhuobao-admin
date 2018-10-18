@@ -10,7 +10,7 @@
                 <Button  @click="searchHandler('formInline')">搜索</Button>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="createHandler">创建</Button>
+                <Button type="primary" @click="showCreate = true">创建</Button>
             </FormItem>
       </Form>
       <Table :data="tableData" :columns="columns" stripe></Table>
@@ -20,140 +20,158 @@
         </div>
       </div>
     </Card>
+    <Modal
+        v-model="showCreate"
+        title="创建"
+        @on-ok="createHandler"
+        @on-cancel="showCreate=false">
+        <Form :model="goodsTypeInfo" :label-width="80">
+            <FormItem label="名称">
+                <Input v-model="goodsTypeInfo.name" />
+            </FormItem>
+            <FormItem label="备注">
+                <Input v-model="goodsTypeInfo.remark" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
+            </FormItem>
+        </Form>
+    </Modal>
+    <Modal
+        v-model="showUpdate"
+        title="修改"
+        @on-ok="updateHandler"
+        @on-cancel="showUpdate=false">
+        <Form :model="goodsTypeInfo" :label-width="80">
+            <FormItem label="名称">
+                <Input v-model="goodsTypeInfo.name" />
+            </FormItem>
+            <FormItem label="备注">
+                <Input v-model="goodsTypeInfo.remark" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
+            </FormItem>
+        </Form>
+    </Modal>
   </div>
 </template>
 
 <script>
-import { readBlogList, deleteBlogById } from "@/api/blog";
-import { mapMutations } from "vuex";
+import {
+  readTodoList,
+  readTodoById,
+  createTodo,
+  updateTodoById,
+  deleteTodoById
+} from '@/api/todo'
+import { readGroupList } from '@/api/group'
 export default {
-  name: "blog_list_page",
+  name: 'todo_list_page',
   components: {},
-  data() {
+  data () {
     return {
       searchForm: {
-        keyword: ""
+        keyword: ''
+      },
+      groupList: [],
+      showCreate: false,
+      showUpdate: false,
+      goodsTypeInfo: {
+        name: '',
+        content: '',
+        createdDate: '',
+        groupId: 1
       },
       columns: [
         {
-          title: "标题",
-          key: "title"
+          title: '名称',
+          key: 'title'
         },
         {
-          title: "分组",
-          key: "groupName"
+          title: '备注',
+          key: 'content'
         },
         {
-          title: "作者",
-          key: "author"
-        },
-        {
-          title: "日期",
-          key: "createdDate",
+          title: '日期',
+          key: 'createdDate',
           sortable: true
         },
         {
-          title: "状态",
-          key: "status",
+          title: '状态',
+          key: 'status',
           render: (h, params) => {
             return h(
-              "span",
+              'span',
               {
                 style: {
-                  color: params.row.status === 1 ? "#5cadff" : "#ed4014"
+                  color: params.row.status === 1 ? '#5cadff' : '#ed4014'
                 }
               },
-              params.row.status === 1 ? "启用" : "禁用"
-            );
+              params.row.status === 1 ? '启用' : '禁用'
+            )
           }
         },
         {
-          title: "操作",
-          key: "actions",
+          title: '操作',
+          key: 'actions',
           width: 250,
-          align: "center",
+          align: 'center',
           render: (h, params) => {
-            return h("div", [
+            return h('div', [
               h(
-                "Button",
+                'Button',
                 {
                   props: {
-                    type: "default",
-                    size: "small"
+                    type: 'default',
+                    size: 'small'
                   },
                   style: {
-                    marginRight: "8px"
+                    marginRight: '8px'
                   },
                   on: {
                     click: () => {
-                      this.viewHandler(params.row.id, params.row.title);
+                      readTodoById(params.row.id).then(resData => {
+                        if (resData.data.ret === 0) {
+                          this.showUpdate = true
+                          this.goodsTypeInfo = resData.data.todo[0]
+                        } else {
+                          this.$Message.error(resData.data.msg)
+                        }
+                      })
                     }
                   }
                 },
-                "查看"
+                '编辑'
               ),
               h(
-                "Button",
+                'Button',
                 {
                   props: {
-                    type: "default",
-                    size: "small"
-                  },
-                  style: {
-                    marginRight: "8px"
-                  },
-                  on: {
-                    click: () => {
-                      this.editHandler(params.row.id, params.row.title);
-                    }
-                  }
-                },
-                "编辑"
-              ),
-              h(
-                "Button",
-                {
-                  props: {
-                    type: "default",
-                    size: "small"
+                    type: 'default',
+                    size: 'small'
                   },
                   on: {
                     click: () => {
                       this.deleteHandler(
                         params.row.id,
                         params.row.status === 1 ? 0 : 1
-                      );
+                      )
                     }
                   }
                 },
-                params.row.status === 1 ? "禁用" : "启用"
+                params.row.status === 1 ? '禁用' : '启用'
               )
-            ]);
+            ])
           }
         }
       ],
       tableData: [],
       total: 0
-    };
-  },
-  watch: {
-    $route(to, from) {
-      if (
-        to.name === "list_blog_page" &&
-        (from.name === "edit_blog_page" || from.name === "create_blog_page")
-      ) {
-        this.readBlogList();
-      }
     }
   },
-  created() {
-    this.readBlogList();
+  created () {
+    this.readTodoList()
+    this.readGroupList()
   },
   methods: {
-    ...mapMutations(["addTag"]),
-    changePage() {},
-    readBlogList() {
-      readBlogList({
+    changePage () {},
+    readTodoList () {
+      readTodoList({
         limit: 20,
         offset: 1,
         keyword: this.searchForm.keyword,
@@ -161,66 +179,66 @@ export default {
       })
         .then(res => {
           if (res.data.ret === 0) {
-            this.tableData = res.data.rows;
-            this.total = res.data.total;
+            this.tableData = res.data.rows
+            this.total = res.data.total
           } else {
-            this.$Message.success(res.data.msg);
+            this.$Message.success(res.data.msg)
           }
         })
         .catch(err => {
-          this.$Message.success(err.message);
-        });
+          this.$Message.success(err.message)
+        })
     },
-    createHandler() {
-      this.$router.push("create_blog_page");
-    },
-    searchHandler() {
-      this.readBlogList();
-    },
-    viewHandler(id, title) {
-      const route = {
-        name: "view_blog_page",
-        params: {
-          id
-        },
-        meta: {
-          title: `浏览博客-${title}`
-        }
-      };
-      this.addTag({
-        route: route,
-        type: "push"
-      });
-      this.$router.push(route);
-    },
-    deleteHandler(id, status) {
-      deleteBlogById(id, status).then(resData => {
+    createHandler () {
+      createTodo(this.goodsTypeInfo).then(resData => {
         if (resData.data.ret === 0) {
-          this.$Message.success("操作成功");
-          this.readBlogList();
+          this.readTodoList()
+          this.$Message.success('操作成功')
+          this.goodsTypeInfo = {}
+          this.showCreate = false
         } else {
-          this.$Message.success(resData.data.msg);
+          this.$Message.error(resData.data.msg)
         }
-      });
+      })
     },
-    editHandler(id, title) {
-      const route = {
-        name: "edit_blog_page",
-        params: {
-          id
-        },
-        meta: {
-          title: `编辑博客-${title}`
+    searchHandler () {
+      this.readTodoList()
+    },
+    deleteHandler (id, status) {
+      deleteTodoById(id, status).then(resData => {
+        if (resData.data.ret === 0) {
+          this.$Message.success('操作成功')
+          this.readTodoList()
+        } else {
+          this.$Message.success(resData.data.msg)
         }
-      };
-      this.addTag({
-        route: route,
-        type: "push"
-      });
-      this.$router.push(route);
+      })
+    },
+    updateHandler () {
+      updateTodoById(this.goodsTypeInfo).then(resData => {
+        if (resData.data.ret === 0) {
+          this.$Message.success('操作成功')
+          this.goodsTypeInfo = {}
+          this.showUpdate = false
+          this.readTodoList()
+        } else {
+          this.$Message.success(resData.data.msg)
+        }
+      })
+    },
+    readGroupList () {
+      readGroupList({
+        limit: 20,
+        offset: 1,
+        type: 2
+      }).then(resData => {
+        if (resData.data.ret === 0) {
+          this.groupList = resData.data.rows
+        }
+      })
     }
   }
-};
+}
 </script>
 
 <style>

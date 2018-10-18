@@ -233,7 +233,7 @@ export default [
         name: 'todo_page',
         meta: {
           icon: 'md-time',
-          title: '待办事项列表'
+          title: '待办事项'
         },
         component: () => import('@/view/todo/todo_list.vue')
       }
