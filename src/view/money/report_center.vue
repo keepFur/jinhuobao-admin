@@ -1,227 +1,101 @@
 <template>
   <div>
-    <Card>
-        <Form ref="searchForm" :model="searchForm"  inline>
-            <FormItem prop="user">
-                <i-input type="text" style="width:400px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索">
-                </i-input>
-            </FormItem>
-            <FormItem>
-                <Button  @click="searchHandler('formInline')">搜索</Button>
-            </FormItem>
-            <FormItem>
-                <Button type="primary" @click="createHandler">创建</Button>
-            </FormItem>
-      </Form>
-      <Table :data="tableData" :columns="columns" stripe></Table>
-      <div style="margin: 10px;overflow: hidden">
-        <div style="float: right;">
-            <Page :total="total" :current="1" :page-size="20"  @on-change="changePage"></Page>
-        </div>
-      </div>
-    </Card>
+    <Row :gutter="20">
+      <i-col span="4" v-for="(infor, i) in inforCardData" :key="`infor-${i}`" style="height: 120px;">
+        <infor-card shadow :color="infor.color" :icon="infor.icon" :icon-size="36">
+          <count-to :end="infor.count" count-class="count-style"/>
+          <p>{{ infor.title }}</p>
+        </infor-card>
+      </i-col>
+    </Row>
+    <Row :gutter="20" style="margin-top: 20px;">
+      <i-col span="8">
+        <Card shadow>
+          <chart-pie style="height: 300px;" :value="pieData" text="用户访问来源"></chart-pie>
+        </Card>
+      </i-col>
+      <i-col span="16">
+        <Card shadow>
+          <chart-bar style="height: 300px;" :value="barData" text="每周用户活跃量"/>
+        </Card>
+      </i-col>
+    </Row>
+    <Row style="margin-top: 20px;">
+      <Card shadow>
+        <example style="height: 310px;"/>
+      </Card>
+    </Row>
   </div>
 </template>
 
 <script>
-import { readBlogList, deleteBlogById } from '@/api/blog'
-import { mapMutations } from 'vuex'
+import InforCard from '_c/info-card'
+import CountTo from '_c/count-to'
+import { ChartPie, ChartBar } from '_c/charts'
+import Example from './example.vue'
 export default {
-  name: 'blog_list_page',
-  components: {},
+  name: 'report_center_page',
+  components: {
+    InforCard,
+    CountTo,
+    ChartPie,
+    ChartBar,
+    Example
+  },
   data () {
     return {
-      searchForm: {
-        keyword: ''
-      },
-      columns: [
+      inforCardData: [
         {
-          title: '标题',
-          key: 'title'
+          title: '新增用户',
+          icon: 'md-person-add',
+          count: 803,
+          color: '#2d8cf0'
         },
         {
-          title: '分组',
-          key: 'groupName'
+          title: '累计点击',
+          icon: 'md-locate',
+          count: 23432,
+          color: '#19be6b'
         },
         {
-          title: '作者',
-          key: 'author'
+          title: '新增问答',
+          icon: 'md-help-circle',
+          count: 142,
+          color: '#ff9900'
         },
+        { title: '分享统计', icon: 'md-share', count: 657, color: '#ed3f14' },
         {
-          title: '日期',
-          key: 'createdDate',
-          sortable: true
+          title: '新增互动',
+          icon: 'md-chatbubbles',
+          count: 12,
+          color: '#E46CBB'
         },
-        {
-          title: '状态',
-          key: 'status',
-          render: (h, params) => {
-            return h(
-              'span',
-              {
-                style: {
-                  color: params.row.status === 1 ? '#5cadff' : '#ed4014'
-                }
-              },
-              params.row.status === 1 ? '启用' : '禁用'
-            )
-          }
-        },
-        {
-          title: '操作',
-          key: 'actions',
-          width: 250,
-          align: 'center',
-          render: (h, params) => {
-            return h('div', [
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'default',
-                    size: 'small'
-                  },
-                  style: {
-                    marginRight: '8px'
-                  },
-                  on: {
-                    click: () => {
-                      this.viewHandler(params.row.id, params.row.title)
-                    }
-                  }
-                },
-                '查看'
-              ),
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'default',
-                    size: 'small'
-                  },
-                  style: {
-                    marginRight: '8px'
-                  },
-                  on: {
-                    click: () => {
-                      this.editHandler(params.row.id, params.row.title)
-                    }
-                  }
-                },
-                '编辑'
-              ),
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'default',
-                    size: 'small'
-                  },
-                  on: {
-                    click: () => {
-                      this.deleteHandler(
-                        params.row.id,
-                        params.row.status === 1 ? 0 : 1
-                      )
-                    }
-                  }
-                },
-                params.row.status === 1 ? '禁用' : '启用'
-              )
-            ])
-          }
-        }
+        { title: '新增页面', icon: 'md-map', count: 14, color: '#9A66E4' }
       ],
-      tableData: [],
-      total: 0
-    }
-  },
-  watch: {
-    $route (to, from) {
-      if (
-        to.name === 'list_blog_page' &&
-        (from.name === 'edit_blog_page' || from.name === 'create_blog_page')
-      ) {
-        this.readBlogList()
+      pieData: [
+        { value: 335, name: '直接访问' },
+        { value: 310, name: '邮件营销' },
+        { value: 234, name: '联盟广告' },
+        { value: 135, name: '视频广告' },
+        { value: 1548, name: '搜索引擎' }
+      ],
+      barData: {
+        Mon: 13253,
+        Tue: 34235,
+        Wed: 26321,
+        Thu: 12340,
+        Fri: 24643,
+        Sat: 1322,
+        Sun: 1324
       }
     }
   },
-  created () {
-    this.readBlogList()
-  },
-  methods: {
-    ...mapMutations(['addTag']),
-    changePage () {},
-    readBlogList () {
-      readBlogList({
-        limit: 20,
-        offset: 1,
-        keyword: this.searchForm.keyword,
-        isSuper: 1
-      })
-        .then(res => {
-          if (res.data.ret === 0) {
-            this.tableData = res.data.rows
-            this.total = res.data.total
-          } else {
-            this.$Message.success(res.data.msg)
-          }
-        })
-        .catch(err => {
-          this.$Message.success(err.message)
-        })
-    },
-    createHandler () {
-      this.$router.push('create_blog_page')
-    },
-    searchHandler () {
-      this.readBlogList()
-    },
-    viewHandler (id, title) {
-      const route = {
-        name: 'view_blog_page',
-        params: {
-          id
-        },
-        meta: {
-          title: `浏览博客-${title}`
-        }
-      }
-      this.addTag({
-        route: route,
-        type: 'push'
-      })
-      this.$router.push(route)
-    },
-    deleteHandler (id, status) {
-      deleteBlogById(id, status).then(resData => {
-        if (resData.data.ret === 0) {
-          this.$Message.success('操作成功')
-          this.readBlogList()
-        } else {
-          this.$Message.success(resData.data.msg)
-        }
-      })
-    },
-    editHandler (id, title) {
-      const route = {
-        name: 'edit_blog_page',
-        params: {
-          id
-        },
-        meta: {
-          title: `编辑博客-${title}`
-        }
-      }
-      this.addTag({
-        route: route,
-        type: 'push'
-      })
-      this.$router.push(route)
-    }
-  }
+  mounted () {}
 }
 </script>
 
-<style>
+<style lang="less">
+.count-style {
+  font-size: 50px;
+}
 </style>

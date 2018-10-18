@@ -1,16 +1,25 @@
 <template>
   <div>
-    <Form :model="blogInfo" label-position="top">
-        <FormItem label="分组">
-            <Select v-model="blogInfo.groupId">
+    <Form :model="storeInfo" label-position="top">
+        <FormItem label="类型">
+            <Select v-model="storeInfo.type" ref='group_select' @on-open-change="openChangerHandler">
               <Option  v-for="(item,index) in groupList" :key="index" :value="item.id">{{item.name}}</Option>
             </Select>
         </FormItem>
-        <FormItem label="标题">
-            <Input v-model="blogInfo.title"/>
+        <FormItem label="名称">
+            <Input v-model="storeInfo.name" placeholder=""/>
         </FormItem>
-        <FormItem label="内容">
-            <editor ref="editor" :cache="false" v-model="blogInfo.content"/>
+        <FormItem label="电话">
+            <Input v-model="storeInfo.phone" placeholder=""/>
+        </FormItem>
+        <FormItem label="老板">
+            <Input v-model="storeInfo.boss" placeholder=""/>
+        </FormItem>
+        <FormItem label="地址">
+            <Input v-model="storeInfo.address" placeholder=""/>
+        </FormItem>
+        <FormItem label="备注">
+          <Input v-model="storeInfo.remark" type="textarea" :autosize="{minRows: 5,maxRows: 5}"/>
         </FormItem>
     </Form>
     <Button type="primary" @click="saveHandler">保存</Button>
@@ -19,35 +28,51 @@
 
 <script>
 import Editor from '_c/editor'
-import { readBlogById, updateBlogById } from '@/api/blog'
+import { createBlog } from '@/api/blog'
 import { readGroupList } from '@/api/group'
 export default {
-  name: 'edit_blog_page',
+  name: 'edit_store_page',
   components: {
     Editor
   },
   data () {
     return {
-      blogInfo: {
-        title: '',
-        groupId: 1,
-        content: ''
+      storeInfo: {
+        name: '',
+        type: 1,
+        address: '',
+        phone: '',
+        boss: '',
+        authorId: 1,
+        remark: ''
       },
       groupList: []
     }
   },
-  created () {
-    readBlogById(this.$route.params.id).then(resData => {
-      if (resData.data.ret === 0) {
-        this.blogInfo = resData.data.blog[0]
-        this.$refs.editor.setHtml(this.blogInfo.content)
-      } else {
-        this.$Message.success(resData.data.msg)
-      }
-    })
+  mounted () {
     this.readGroupList()
   },
   methods: {
+    saveHandler () {
+      createBlog(this.storeInfo).then(resData => {
+        if (resData.data.ret === 0) {
+          this.$Message.success('操作成功')
+          this.$router.push({
+            name: 'blog_list_page'
+          })
+        } else {
+          this.$Message.error(resData.data.msg)
+        }
+      })
+    },
+    openChangerHandler (isOpen) {
+      if (
+        isOpen &&
+        this.$refs.group_select.$children[1].$el.style.zIndex !== 10002
+      ) {
+        this.$refs.group_select.$children[1].$el.style.zIndex = 10002
+      }
+    },
     readGroupList () {
       readGroupList({
         limit: 20,
@@ -58,22 +83,7 @@ export default {
           this.groupList = resData.data.rows
         }
       })
-    },
-    saveHandler () {
-      updateBlogById(this.$route.params.id, this.blogInfo).then(resData => {
-        if (resData.data.ret === 0) {
-          this.$Message.success('操作成功')
-          this.$router.push({
-            name: 'blog_list_page'
-          })
-        } else {
-          this.$Message.success(resData.data.msg)
-        }
-      })
     }
   }
 }
 </script>
-
-<style scoped>
-</style>

@@ -68,15 +68,6 @@ export default [
       component: () => import('@/view/goods/goods_list.vue')
     },
     {
-      path: 'view_goods_page/:id',
-      name: 'view_goods_page',
-      meta: {
-        hideInMenu: true,
-        title: '商品查看'
-      },
-      component: () => import('@/view/goods/view_goods.vue')
-    },
-    {
       path: 'edit_goods_page/:id',
       name: 'edit_goods_page',
       meta: {
@@ -112,6 +103,15 @@ export default [
           title: '商家列表'
         },
         component: () => import('@/view/store/store_list.vue')
+      },
+      {
+        path: 'edit_store_page/:id',
+        name: 'edit_store_page',
+        meta: {
+          hideInMenu: true,
+          title: '编辑商家'
+        },
+        component: () => import('@/view/store/edit_store.vue')
       }]
   },
   {

@@ -10,7 +10,7 @@
                 <Button  @click="searchHandler('formInline')">搜索</Button>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="createHandler">创建</Button>
+                <Button type="primary" @click="showCreate = true">创建</Button>
             </FormItem>
       </Form>
       <Table :data="tableData" :columns="columns" stripe></Table>
@@ -20,37 +20,106 @@
         </div>
       </div>
     </Card>
+    <Modal
+        v-model="showCreate"
+        title="创建"
+        @on-ok="createHandler"
+        @on-cancel="showCreate=false">
+        <Form :model="promoteInfo" :label-width="80">
+            <FormItem label="名称">
+                <Input v-model="promoteInfo.name" />
+            </FormItem>
+            <FormItem label="范围">
+                <Input v-model="promoteInfo.range" />
+            </FormItem>
+            <FormItem label="内容">
+                <Input v-model="promoteInfo.content" />
+            </FormItem>
+            <FormItem label="预算">
+                <Input v-model="promoteInfo.budget" />
+            </FormItem>
+            <FormItem label="备注">
+                <Input v-model="promoteInfo.remark" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
+            </FormItem>
+        </Form>
+    </Modal>
+    <Modal
+        v-model="showUpdate"
+        title="修改"
+        @on-ok="updateHandler"
+        @on-cancel="showUpdate=false">
+        <Form :model="promoteInfo" :label-width="80">
+             <FormItem label="名称">
+                <Input v-model="promoteInfo.name" />
+            </FormItem>
+            <FormItem label="范围">
+                <Input v-model="promoteInfo.range" />
+            </FormItem>
+            <FormItem label="内容">
+                <Input v-model="promoteInfo.content" />
+            </FormItem>
+            <FormItem label="预算">
+                <Input v-model="promoteInfo.budget" />
+            </FormItem>
+            <FormItem label="备注">
+                <Input v-model="promoteInfo.remark" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
+            </FormItem>
+        </Form>
+    </Modal>
   </div>
 </template>
 
 <script>
-import { readBlogList, deleteBlogById } from '@/api/blog'
-import { mapMutations } from 'vuex'
+import {
+  readTodoList,
+  readTodoById,
+  createTodo,
+  updateTodoById,
+  deleteTodoById
+} from '@/api/todo'
+import { readGroupList } from '@/api/group'
 export default {
-  name: 'blog_list_page',
+  name: 'promote_list_page',
   components: {},
   data () {
     return {
       searchForm: {
         keyword: ''
       },
+      groupList: [],
+      showCreate: false,
+      showUpdate: false,
+      promoteInfo: {
+        name: '',
+        content: '',
+        budget: '',
+        reamrk: '',
+        range: ''
+      },
       columns: [
         {
-          title: '标题',
+          title: '名称',
           key: 'title'
         },
         {
-          title: '分组',
-          key: 'groupName'
+          title: '内容',
+          key: 'content'
         },
         {
-          title: '作者',
-          key: 'author'
+          title: '预算',
+          key: 'content'
         },
         {
-          title: '日期',
-          key: 'createdDate',
-          sortable: true
+          title: '使用范围',
+          key: 'content'
+        },
+        {
+          title: '创建日期',
+          key: 'createdDate'
+        },
+        {
+          title: '备注',
+          key: 'createdDate'
         },
         {
           title: '状态',
@@ -70,7 +139,7 @@ export default {
         {
           title: '操作',
           key: 'actions',
-          width: 250,
+          width: 200,
           align: 'center',
           render: (h, params) => {
             return h('div', [
@@ -86,11 +155,18 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.viewHandler(params.row.id, params.row.title)
+                      readTodoById(params.row.id).then(resData => {
+                        if (resData.data.ret === 0) {
+                          this.showUpdate = true
+                          this.promoteInfo = resData.data.todo[0]
+                        } else {
+                          this.$Message.error(resData.data.msg)
+                        }
+                      })
                     }
                   }
                 },
-                '查看'
+                '推广'
               ),
               h(
                 'Button',
@@ -104,7 +180,14 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.editHandler(params.row.id, params.row.title)
+                      readTodoById(params.row.id).then(resData => {
+                        if (resData.data.ret === 0) {
+                          this.showUpdate = true
+                          this.promoteInfo = resData.data.todo[0]
+                        } else {
+                          this.$Message.error(resData.data.msg)
+                        }
+                      })
                     }
                   }
                 },
@@ -136,24 +219,14 @@ export default {
       total: 0
     }
   },
-  watch: {
-    $route (to, from) {
-      if (
-        to.name === 'list_blog_page' &&
-        (from.name === 'edit_blog_page' || from.name === 'create_blog_page')
-      ) {
-        this.readBlogList()
-      }
-    }
-  },
   created () {
-    this.readBlogList()
+    this.readTodoList()
+    this.readGroupList()
   },
   methods: {
-    ...mapMutations(['addTag']),
     changePage () {},
-    readBlogList () {
-      readBlogList({
+    readTodoList () {
+      readTodoList({
         limit: 20,
         offset: 1,
         keyword: this.searchForm.keyword,
@@ -172,52 +245,52 @@ export default {
         })
     },
     createHandler () {
-      this.$router.push('create_blog_page')
+      createTodo(this.promoteInfo).then(resData => {
+        if (resData.data.ret === 0) {
+          this.readTodoList()
+          this.$Message.success('操作成功')
+          this.promoteInfo = {}
+          this.showCreate = false
+        } else {
+          this.$Message.error(resData.data.msg)
+        }
+      })
     },
     searchHandler () {
-      this.readBlogList()
-    },
-    viewHandler (id, title) {
-      const route = {
-        name: 'view_blog_page',
-        params: {
-          id
-        },
-        meta: {
-          title: `浏览博客-${title}`
-        }
-      }
-      this.addTag({
-        route: route,
-        type: 'push'
-      })
-      this.$router.push(route)
+      this.readTodoList()
     },
     deleteHandler (id, status) {
-      deleteBlogById(id, status).then(resData => {
+      deleteTodoById(id, status).then(resData => {
         if (resData.data.ret === 0) {
           this.$Message.success('操作成功')
-          this.readBlogList()
+          this.readTodoList()
         } else {
           this.$Message.success(resData.data.msg)
         }
       })
     },
-    editHandler (id, title) {
-      const route = {
-        name: 'edit_blog_page',
-        params: {
-          id
-        },
-        meta: {
-          title: `编辑博客-${title}`
+    updateHandler () {
+      updateTodoById(this.promoteInfo).then(resData => {
+        if (resData.data.ret === 0) {
+          this.$Message.success('操作成功')
+          this.promoteInfo = {}
+          this.showUpdate = false
+          this.readTodoList()
+        } else {
+          this.$Message.success(resData.data.msg)
         }
-      }
-      this.addTag({
-        route: route,
-        type: 'push'
       })
-      this.$router.push(route)
+    },
+    readGroupList () {
+      readGroupList({
+        limit: 20,
+        offset: 1,
+        type: 2
+      }).then(resData => {
+        if (resData.data.ret === 0) {
+          this.groupList = resData.data.rows
+        }
+      })
     }
   }
 }

@@ -27,7 +27,7 @@
 import { readBlogList, deleteBlogById } from '@/api/blog'
 import { mapMutations } from 'vuex'
 export default {
-  name: 'blog_list_page',
+  name: 'goods_list_page',
   components: {},
   data () {
     return {
@@ -36,15 +36,27 @@ export default {
       },
       columns: [
         {
-          title: '标题',
+          title: '名称',
           key: 'title'
         },
         {
-          title: '分组',
+          title: '类型',
           key: 'groupName'
         },
         {
-          title: '作者',
+          title: '售价/进价/数量',
+          key: 'author'
+        },
+        {
+          title: '描述',
+          key: 'groupName'
+        },
+        {
+          title: '图片',
+          key: 'author'
+        },
+        {
+          title: '备注',
           key: 'author'
         },
         {
@@ -54,6 +66,10 @@ export default {
         },
         {
           title: '状态',
+          key: ''
+        },
+        {
+          title: '数据状态',
           key: 'status',
           render: (h, params) => {
             return h(
@@ -70,7 +86,7 @@ export default {
         {
           title: '操作',
           key: 'actions',
-          width: 250,
+          width: 200,
           align: 'center',
           render: (h, params) => {
             return h('div', [
@@ -86,11 +102,11 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.viewHandler(params.row.id, params.row.title)
+                      this.salineHandler()
                     }
                   }
                 },
-                '查看'
+                '上架'
               ),
               h(
                 'Button',
@@ -172,26 +188,13 @@ export default {
         })
     },
     createHandler () {
-      this.$router.push('create_blog_page')
+      this.$router.push('create_goods_page')
     },
     searchHandler () {
       this.readBlogList()
     },
-    viewHandler (id, title) {
-      const route = {
-        name: 'view_blog_page',
-        params: {
-          id
-        },
-        meta: {
-          title: `浏览博客-${title}`
-        }
-      }
-      this.addTag({
-        route: route,
-        type: 'push'
-      })
-      this.$router.push(route)
+    salineHandler (id, title) {
+      this.$Message.success('操作成功')
     },
     deleteHandler (id, status) {
       deleteBlogById(id, status).then(resData => {
@@ -205,12 +208,12 @@ export default {
     },
     editHandler (id, title) {
       const route = {
-        name: 'edit_blog_page',
+        name: 'edit_goods_page',
         params: {
           id
         },
         meta: {
-          title: `编辑博客-${title}`
+          title: `编辑商品-${title}`
         }
       }
       this.addTag({

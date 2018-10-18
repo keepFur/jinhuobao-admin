@@ -61,7 +61,7 @@ import {
 } from '@/api/todo'
 import { readGroupList } from '@/api/group'
 export default {
-  name: 'todo_list_page',
+  name: 'store_type_list_page',
   components: {},
   data () {
     return {

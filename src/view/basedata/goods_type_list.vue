@@ -61,7 +61,7 @@ import {
 } from '@/api/todo'
 import { readGroupList } from '@/api/group'
 export default {
-  name: 'todo_list_page',
+  name: 'goods_type_list_page',
   components: {},
   data () {
     return {
@@ -73,9 +73,7 @@ export default {
       showUpdate: false,
       goodsTypeInfo: {
         name: '',
-        content: '',
-        createdDate: '',
-        groupId: 1
+        content: ''
       },
       columns: [
         {

@@ -31,7 +31,7 @@ import Editor from '_c/editor'
 import { createBlog } from '@/api/blog'
 import { readGroupList } from '@/api/group'
 export default {
-  name: 'create_blog_page',
+  name: 'create_store_page',
   components: {
     Editor
   },

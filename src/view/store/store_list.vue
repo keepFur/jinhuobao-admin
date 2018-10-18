@@ -27,7 +27,7 @@
 import { readBlogList, deleteBlogById } from '@/api/blog'
 import { mapMutations } from 'vuex'
 export default {
-  name: 'blog_list_page',
+  name: 'store_list_page',
   components: {},
   data () {
     return {
@@ -36,16 +36,28 @@ export default {
       },
       columns: [
         {
-          title: '标题',
+          title: '名称',
           key: 'title'
         },
         {
-          title: '分组',
+          title: '类型',
           key: 'groupName'
         },
         {
-          title: '作者',
+          title: '电话',
           key: 'author'
+        },
+        {
+          title: '老板',
+          key: 'groupName'
+        },
+        {
+          title: '地址',
+          key: 'author'
+        },
+        {
+          title: '备注',
+          key: 'groupName'
         },
         {
           title: '日期',
@@ -70,28 +82,10 @@ export default {
         {
           title: '操作',
           key: 'actions',
-          width: 250,
+          width: 200,
           align: 'center',
           render: (h, params) => {
             return h('div', [
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'default',
-                    size: 'small'
-                  },
-                  style: {
-                    marginRight: '8px'
-                  },
-                  on: {
-                    click: () => {
-                      this.viewHandler(params.row.id, params.row.title)
-                    }
-                  }
-                },
-                '查看'
-              ),
               h(
                 'Button',
                 {
@@ -172,26 +166,10 @@ export default {
         })
     },
     createHandler () {
-      this.$router.push('create_blog_page')
+      this.$router.push('create_store_page')
     },
     searchHandler () {
       this.readBlogList()
-    },
-    viewHandler (id, title) {
-      const route = {
-        name: 'view_blog_page',
-        params: {
-          id
-        },
-        meta: {
-          title: `浏览博客-${title}`
-        }
-      }
-      this.addTag({
-        route: route,
-        type: 'push'
-      })
-      this.$router.push(route)
     },
     deleteHandler (id, status) {
       deleteBlogById(id, status).then(resData => {
@@ -203,14 +181,14 @@ export default {
         }
       })
     },
-    editHandler (id, title) {
+    editHandler (id, name) {
       const route = {
-        name: 'edit_blog_page',
+        name: 'edit_store_page',
         params: {
           id
         },
         meta: {
-          title: `编辑博客-${title}`
+          title: `编辑商家-${name}`
         }
       }
       this.addTag({

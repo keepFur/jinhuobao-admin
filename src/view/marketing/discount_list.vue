@@ -10,7 +10,7 @@
                 <Button  @click="searchHandler('formInline')">搜索</Button>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="createHandler">创建</Button>
+                <Button type="primary" @click="showCreate = true">创建</Button>
             </FormItem>
       </Form>
       <Table :data="tableData" :columns="columns" stripe></Table>
@@ -20,40 +20,141 @@
         </div>
       </div>
     </Card>
+    <Modal
+        v-model="showCreate"
+        title="创建"
+        @on-ok="createHandler"
+        @on-cancel="showCreate=false">
+        <Form :model="discountInfo" :label-width="80">
+            <FormItem label="名称">
+                <Input v-model="discountInfo.name" />
+            </FormItem>
+            <FormItem label="范围">
+                <Input v-model="discountInfo.range" />
+            </FormItem>
+            <FormItem label="内容">
+                <Input v-model="discountInfo.content" />
+            </FormItem>
+            <FormItem label="总金额">
+                <Input v-model="discountInfo.totalPrice" />
+            </FormItem>
+            <FormItem label="优惠金额">
+                <Input v-model="discountInfo.discountPrice" />
+            </FormItem>
+            <FormItem label="总数量">
+                <Input v-model="discountInfo.totalCount" />
+            </FormItem>
+            <FormItem label="备注">
+                <Input v-model="discountInfo.remark" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
+            </FormItem>
+        </Form>
+    </Modal>
+    <Modal
+        v-model="showUpdate"
+        title="修改"
+        @on-ok="updateHandler"
+        @on-cancel="showUpdate=false">
+        <Form :model="discountInfo" :label-width="80">
+             <FormItem label="名称">
+                <Input v-model="discountInfo.name" />
+            </FormItem>
+            <FormItem label="范围">
+                <Input v-model="discountInfo.range" />
+            </FormItem>
+            <FormItem label="内容">
+                <Input v-model="discountInfo.content" />
+            </FormItem>
+            <FormItem label="总金额">
+                <Input v-model="discountInfo.totalPrice" />
+            </FormItem>
+            <FormItem label="优惠金额">
+                <Input v-model="discountInfo.discountPrice" />
+            </FormItem>
+            <FormItem label="总数量">
+                <Input v-model="discountInfo.totalCount" />
+            </FormItem>
+            <FormItem label="备注">
+                <Input v-model="discountInfo.remark" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
+            </FormItem>
+        </Form>
+    </Modal>
   </div>
 </template>
 
 <script>
-import { readBlogList, deleteBlogById } from '@/api/blog'
-import { mapMutations } from 'vuex'
+import {
+  readTodoList,
+  readTodoById,
+  createTodo,
+  updateTodoById,
+  deleteTodoById
+} from '@/api/todo'
+import { readGroupList } from '@/api/group'
 export default {
-  name: 'blog_list_page',
+  name: 'discount_list_page',
   components: {},
   data () {
     return {
       searchForm: {
         keyword: ''
       },
+      groupList: [],
+      showCreate: false,
+      showUpdate: false,
+      discountInfo: {
+        name: '',
+        content: '',
+        reamrk: '',
+        totalPrice: '',
+        discountPrice: '',
+        totalCount: '',
+        useCount: '',
+        range: '',
+        groupId: 1
+      },
       columns: [
         {
-          title: '标题',
+          title: '名称',
           key: 'title'
         },
         {
-          title: '分组',
-          key: 'groupName'
+          title: '内容',
+          key: 'content'
         },
         {
-          title: '作者',
-          key: 'author'
+          title: '总金额',
+          key: 'content'
         },
         {
-          title: '日期',
-          key: 'createdDate',
-          sortable: true
+          title: '优惠金额',
+          key: 'content'
+        },
+        {
+          title: '使用范围',
+          key: 'content'
+        },
+        {
+          title: '总数量',
+          key: 'content'
+        },
+        {
+          title: '已使用数量',
+          key: 'content'
         },
         {
           title: '状态',
+          key: 'content'
+        },
+        {
+          title: '创建日期',
+          key: 'createdDate'
+        },
+        {
+          title: '备注',
+          key: 'createdDate'
+        },
+        {
+          title: '数据状态',
           key: 'status',
           render: (h, params) => {
             return h(
@@ -70,7 +171,7 @@ export default {
         {
           title: '操作',
           key: 'actions',
-          width: 250,
+          width: 200,
           align: 'center',
           render: (h, params) => {
             return h('div', [
@@ -86,11 +187,18 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.viewHandler(params.row.id, params.row.title)
+                      readTodoById(params.row.id).then(resData => {
+                        if (resData.data.ret === 0) {
+                          this.showUpdate = true
+                          this.discountInfo = resData.data.todo[0]
+                        } else {
+                          this.$Message.error(resData.data.msg)
+                        }
+                      })
                     }
                   }
                 },
-                '查看'
+                '派发'
               ),
               h(
                 'Button',
@@ -104,7 +212,14 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.editHandler(params.row.id, params.row.title)
+                      readTodoById(params.row.id).then(resData => {
+                        if (resData.data.ret === 0) {
+                          this.showUpdate = true
+                          this.discountInfo = resData.data.todo[0]
+                        } else {
+                          this.$Message.error(resData.data.msg)
+                        }
+                      })
                     }
                   }
                 },
@@ -136,24 +251,14 @@ export default {
       total: 0
     }
   },
-  watch: {
-    $route (to, from) {
-      if (
-        to.name === 'list_blog_page' &&
-        (from.name === 'edit_blog_page' || from.name === 'create_blog_page')
-      ) {
-        this.readBlogList()
-      }
-    }
-  },
   created () {
-    this.readBlogList()
+    this.readTodoList()
+    this.readGroupList()
   },
   methods: {
-    ...mapMutations(['addTag']),
     changePage () {},
-    readBlogList () {
-      readBlogList({
+    readTodoList () {
+      readTodoList({
         limit: 20,
         offset: 1,
         keyword: this.searchForm.keyword,
@@ -172,52 +277,52 @@ export default {
         })
     },
     createHandler () {
-      this.$router.push('create_blog_page')
+      createTodo(this.discountInfo).then(resData => {
+        if (resData.data.ret === 0) {
+          this.readTodoList()
+          this.$Message.success('操作成功')
+          this.discountInfo = {}
+          this.showCreate = false
+        } else {
+          this.$Message.error(resData.data.msg)
+        }
+      })
     },
     searchHandler () {
-      this.readBlogList()
-    },
-    viewHandler (id, title) {
-      const route = {
-        name: 'view_blog_page',
-        params: {
-          id
-        },
-        meta: {
-          title: `浏览博客-${title}`
-        }
-      }
-      this.addTag({
-        route: route,
-        type: 'push'
-      })
-      this.$router.push(route)
+      this.readTodoList()
     },
     deleteHandler (id, status) {
-      deleteBlogById(id, status).then(resData => {
+      deleteTodoById(id, status).then(resData => {
         if (resData.data.ret === 0) {
           this.$Message.success('操作成功')
-          this.readBlogList()
+          this.readTodoList()
         } else {
           this.$Message.success(resData.data.msg)
         }
       })
     },
-    editHandler (id, title) {
-      const route = {
-        name: 'edit_blog_page',
-        params: {
-          id
-        },
-        meta: {
-          title: `编辑博客-${title}`
+    updateHandler () {
+      updateTodoById(this.discountInfo).then(resData => {
+        if (resData.data.ret === 0) {
+          this.$Message.success('操作成功')
+          this.discountInfo = {}
+          this.showUpdate = false
+          this.readTodoList()
+        } else {
+          this.$Message.success(resData.data.msg)
         }
-      }
-      this.addTag({
-        route: route,
-        type: 'push'
       })
-      this.$router.push(route)
+    },
+    readGroupList () {
+      readGroupList({
+        limit: 20,
+        offset: 1,
+        type: 2
+      }).then(resData => {
+        if (resData.data.ret === 0) {
+          this.groupList = resData.data.rows
+        }
+      })
     }
   }
 }

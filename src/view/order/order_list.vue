@@ -10,7 +10,7 @@
                 <Button  @click="searchHandler('formInline')">搜索</Button>
             </FormItem>
             <FormItem>
-                <Button type="primary" @click="createHandler">创建</Button>
+                <Button type="primary" @click="printHandler">打印</Button>
             </FormItem>
       </Form>
       <Table :data="tableData" :columns="columns" stripe></Table>
@@ -27,7 +27,7 @@
 import { readBlogList, deleteBlogById } from '@/api/blog'
 import { mapMutations } from 'vuex'
 export default {
-  name: 'blog_list_page',
+  name: 'order_list_page',
   components: {},
   data () {
     return {
@@ -36,25 +36,73 @@ export default {
       },
       columns: [
         {
-          title: '标题',
-          key: 'title'
+          type: 'selection',
+          width: 60,
+          align: 'center',
+          fixed: 'left'
         },
         {
-          title: '分组',
-          key: 'groupName'
+          title: '订单号',
+          key: 'num',
+          fixed: 'left',
+          width: 150
         },
         {
-          title: '作者',
-          key: 'author'
+          title: '支付流水号',
+          key: 'title',
+          width: 150
+        },
+        {
+          title: '商家',
+          key: 'groupName',
+          width: 150
+        },
+        {
+          title: '送达时间',
+          key: 'author',
+          width: 150
+        },
+        {
+          title: '数量',
+          key: 'title',
+          width: 150
+        },
+
+        {
+          title: '总金额/优惠金额/实际支付金额/运费',
+          key: 'groupName',
+          width: 250
+        },
+        {
+          title: '支付方式',
+          key: '',
+          width: 150
+        },
+        {
+          title: '送达时间',
+          key: 'author',
+          width: 150
+        },
+        {
+          title: '状态',
+          width: 150,
+          key: 'status'
         },
         {
           title: '日期',
           key: 'createdDate',
+          width: 150,
           sortable: true
         },
         {
-          title: '状态',
+          title: '备注',
+          key: '',
+          width: 150
+        },
+        {
+          title: '数据状态',
           key: 'status',
+          width: 150,
           render: (h, params) => {
             return h(
               'span',
@@ -72,6 +120,7 @@ export default {
           key: 'actions',
           width: 250,
           align: 'center',
+          fixed: 'right',
           render: (h, params) => {
             return h('div', [
               h(
@@ -90,7 +139,25 @@ export default {
                     }
                   }
                 },
-                '查看'
+                '查看商品'
+              ),
+              h(
+                'Button',
+                {
+                  props: {
+                    type: 'default',
+                    size: 'small'
+                  },
+                  style: {
+                    marginRight: '8px'
+                  },
+                  on: {
+                    click: () => {
+                      this.viewHandler(params.row.id, params.row.title)
+                    }
+                  }
+                },
+                '打印'
               ),
               h(
                 'Button',
@@ -171,11 +238,11 @@ export default {
           this.$Message.success(err.message)
         })
     },
-    createHandler () {
-      this.$router.push('create_blog_page')
-    },
     searchHandler () {
       this.readBlogList()
+    },
+    printHandler () {
+      this.$Message.success('操作成功')
     },
     viewHandler (id, title) {
       const route = {
