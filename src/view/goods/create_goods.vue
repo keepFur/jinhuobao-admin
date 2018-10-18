@@ -1,16 +1,34 @@
 <template>
   <div>
-    <Form :model="blogInfo" label-position="top">
-        <FormItem label="分组">
-            <Select v-model="blogInfo.groupId" ref='group_select' @on-open-change="openChangerHandler">
+    <Form :model="goodsInfo" label-position="top">
+        <FormItem label="类型">
+            <Select v-model="goodsInfo.type" ref='group_select' @on-open-change="openChangerHandler">
               <Option  v-for="(item,index) in groupList" :key="index" :value="item.id">{{item.name}}</Option>
             </Select>
         </FormItem>
-        <FormItem label="标题">
-            <Input v-model="blogInfo.title" placeholder="请为你的博客取个好名字"/>
+        <FormItem label="名称">
+            <Input v-model="goodsInfo.name" placeholder=""/>
         </FormItem>
-        <FormItem label="内容">
-            <editor ref="editor" v-model="blogInfo.content"/>
+        <FormItem label="售价/进价/数量">
+          <InputNumber :max="1000" :min="0.1" v-model="goodsInfo.outPrice" :step="0.1" style="margin-right:32px;" placeholder="售价"></InputNumber>
+          <InputNumber :max="1000" :min="0.1" v-model="goodsInfo.inPrice" :step="0.1" style="margin-right:32px;" placeholder="进价"></InputNumber>
+          <InputNumber :max="1000" :min="1" v-model="goodsInfo.count" :step="5" placeholder="数量"></InputNumber>
+        </FormItem>
+        <FormItem label="描述">
+          <Input v-model="goodsInfo.desc" type="textarea" :autosize="{minRows: 5,maxRows: 5}"/>
+        </FormItem>
+        <FormItem label="图片">
+          <Upload
+              type="drag"
+              action="http://jsonplaceholder.typicode.com/posts/">
+              <div style="padding: 20px 0">
+                  <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
+                  <p>点击或拖动上传</p>
+              </div>
+          </Upload>
+        </FormItem>
+        <FormItem label="备注">
+          <Input v-model="goodsInfo.remark" type="textarea" :autosize="{minRows: 2,maxRows: 5}"/>
         </FormItem>
     </Form>
     <Button type="primary" @click="saveHandler">保存</Button>
@@ -28,11 +46,16 @@ export default {
   },
   data () {
     return {
-      blogInfo: {
-        title: '',
-        groupId: 1,
+      goodsInfo: {
+        name: '',
+        type: 1,
+        desc: '',
+        inPrice: '',
+        outPrice: '',
+        count: '',
+        picture: 1,
         authorId: 1,
-        content: '尽情发挥吧。。。。'
+        remark: ''
       },
       groupList: []
     }
@@ -42,7 +65,7 @@ export default {
   },
   methods: {
     saveHandler () {
-      createBlog(this.blogInfo).then(resData => {
+      createBlog(this.goodsInfo).then(resData => {
         if (resData.data.ret === 0) {
           this.$Message.success('操作成功')
           this.$router.push({
