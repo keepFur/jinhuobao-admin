@@ -102,7 +102,7 @@ export default [
           icon: 'ios-add-circle',
           title: '添加商家'
         },
-        component: () => import('@/view/store/store_list.vue')
+        component: () => import('@/view/store/create_store.vue')
       },
       {
         path: 'store_list_page',
