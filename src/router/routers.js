@@ -43,7 +43,7 @@ export default [
   },
   {
     path: '/goods',
-    name: 'goods',
+    name: '商品管理',
     meta: {
       icon: 'ios-apps',
       title: '商品管理'
@@ -88,7 +88,7 @@ export default [
   },
   {
     path: '/store',
-    name: 'store',
+    name: '商家管理',
     meta: {
       icon: 'md-appstore',
       title: '商家管理'
@@ -116,7 +116,7 @@ export default [
   },
   {
     path: '/basedata',
-    name: 'basedata',
+    name: '基础数据管理',
     meta: {
       icon: 'md-analytics',
       title: '基础数据管理'
@@ -143,7 +143,7 @@ export default [
   },
   {
     path: '/money',
-    name: 'money',
+    name: '财务管理',
     meta: {
       icon: 'logo-yen',
       title: '财务管理'
@@ -168,9 +168,48 @@ export default [
       component: () => import('@/view/money/income_list.vue')
     }]
   },
+
   {
     path: '',
-    name: 'order',
+    name: '营销中心',
+    component: Main,
+    meta: {
+      icon: 'ios-cube',
+      title: '营销中心'
+    },
+    children: [
+      {
+        path: 'discount_list_page',
+        name: 'discount_list_page',
+        meta: {
+          icon: 'md-paper',
+          title: '优惠券列表'
+        },
+        component: () => import('@/view/marketing/discount_list.vue')
+      },
+      {
+        path: 'promote_list_page',
+        name: 'promote_list_page',
+        meta: {
+          icon: 'ios-navigate',
+          title: '推广活动列表'
+        },
+        component: () => import('@/view/marketing/promote_list.vue')
+      },
+      {
+        path: 'datas_page',
+        name: 'datas_page',
+        meta: {
+          icon: 'ios-analytics',
+          title: '运营分析'
+        },
+        component: () => import('@/view/marketing/ruing_analytics.vue')
+      }
+    ]
+  },
+  {
+    path: '',
+    name: '订单管理',
     component: Main,
     children: [
       {
@@ -186,23 +225,7 @@ export default [
   },
   {
     path: '',
-    name: 'datas',
-    component: Main,
-    children: [
-      {
-        path: 'datas_page',
-        name: 'datas_page',
-        meta: {
-          icon: 'ios-analytics',
-          title: '运营分析'
-        },
-        component: () => import('@/view/ruing/ruing.vue')
-      }
-    ]
-  },
-  {
-    path: '',
-    name: 'todo',
+    name: '代办事项管理',
     component: Main,
     children: [
       {
@@ -210,7 +233,7 @@ export default [
         name: 'todo_page',
         meta: {
           icon: 'md-time',
-          title: '待办事项'
+          title: '待办事项列表'
         },
         component: () => import('@/view/todo/todo_list.vue')
       }
@@ -218,7 +241,23 @@ export default [
   },
   {
     path: '',
-    name: 'setting',
+    name: '通知管理',
+    component: Main,
+    children: [
+      {
+        path: 'notice_page',
+        name: 'notice_page',
+        meta: {
+          icon: 'ios-notifications',
+          title: '通知列表'
+        },
+        component: () => import('@/view/notice/notice_list.vue')
+      }
+    ]
+  },
+  {
+    path: '',
+    name: '设置',
     component: Main,
     children: [
       {
