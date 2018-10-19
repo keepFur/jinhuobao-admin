@@ -3,7 +3,7 @@
     <Card>
         <Form ref="searchForm" :model="searchForm"  inline>
             <FormItem prop="user">
-                <i-input type="text" style="width:400px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索">
+                <i-input type="text" style="width:400px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索，支持名称和内容">
                 </i-input>
             </FormItem>
             <FormItem>
@@ -29,8 +29,11 @@
             <FormItem label="名称">
                 <Input v-model="noticeInfo.name" />
             </FormItem>
+            <FormItem label="内容">
+                <Input v-model="noticeInfo.content" />
+            </FormItem>
             <FormItem label="范围">
-                <Input v-model="noticeInfo.range" />
+                <Input v-model="noticeInfo.useRange" />
             </FormItem>
             <FormItem label="备注">
                 <Input v-model="noticeInfo.remark" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
@@ -46,8 +49,11 @@
             <FormItem label="名称">
                 <Input v-model="noticeInfo.name" />
             </FormItem>
+             <FormItem label="内容">
+                <Input v-model="noticeInfo.content" />
+            </FormItem>
              <FormItem label="范围">
-                <Input v-model="noticeInfo.range" />
+                <Input v-model="noticeInfo.useRange" />
             </FormItem>
             <FormItem label="备注">
                 <Input v-model="noticeInfo.remark" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
@@ -59,13 +65,12 @@
 
 <script>
 import {
-  readTodoList,
-  readTodoById,
-  createTodo,
-  updateTodoById,
-  deleteTodoById
-} from '@/api/todo'
-import { readGroupList } from '@/api/group'
+  readNoticeList,
+  readNoticeById,
+  createNotice,
+  updateNoticeById,
+  deleteNoticeById
+} from '@/api/notice'
 export default {
   name: 'notice_list_page',
   components: {},
@@ -74,20 +79,18 @@ export default {
       searchForm: {
         keyword: ''
       },
-      groupList: [],
       showCreate: false,
       showUpdate: false,
       noticeInfo: {
+        remark: '',
         name: '',
         content: '',
-        range: '',
-        createdDate: '',
-        groupId: 1
+        useRange: ''
       },
       columns: [
         {
           title: '名称',
-          key: 'title'
+          key: 'name'
         },
         {
           title: '内容',
@@ -95,29 +98,29 @@ export default {
         },
         {
           title: '范围',
-          key: 'content'
+          key: 'useRange'
         },
         {
           title: '备注',
-          key: 'content'
+          key: 'remark'
         },
         {
           title: '日期',
-          key: 'createdDate',
+          key: 'createDate',
           sortable: true
         },
         {
           title: '状态',
-          key: 'status',
+          key: 'dataStatus',
           render: (h, params) => {
             return h(
               'span',
               {
                 style: {
-                  color: params.row.status === 1 ? '#5cadff' : '#ed4014'
+                  color: params.row.dataStatus === 1 ? '#5cadff' : '#ed4014'
                 }
               },
-              params.row.status === 1 ? '启用' : '禁用'
+              params.row.dataStatus === 1 ? '启用' : '禁用'
             )
           }
         },
@@ -139,10 +142,10 @@ export default {
                   },
                   on: {
                     click: () => {
-                      readTodoById(params.row.id).then(resData => {
+                      readNoticeById(params.row.id).then(resData => {
                         if (resData.data.ret === 0) {
                           this.showUpdate = true
-                          this.noticeInfo = resData.data.todo[0]
+                          this.noticeInfo = resData.data.notice[0]
                         } else {
                           this.$Message.error(resData.data.msg)
                         }
@@ -163,12 +166,12 @@ export default {
                     click: () => {
                       this.deleteHandler(
                         params.row.id,
-                        params.row.status === 1 ? 0 : 1
+                        params.row.dataStatus === 1 ? 0 : 1
                       )
                     }
                   }
                 },
-                params.row.status === 1 ? '禁用' : '启用'
+                params.row.dataStatus === 1 ? '禁用' : '启用'
               )
             ])
           }
@@ -179,17 +182,15 @@ export default {
     }
   },
   created () {
-    this.readTodoList()
-    this.readGroupList()
+    this.readNoticeList()
   },
   methods: {
     changePage () {},
-    readTodoList () {
-      readTodoList({
+    readNoticeList () {
+      readNoticeList({
         limit: 20,
         offset: 1,
-        keyword: this.searchForm.keyword,
-        isSuper: 1
+        keyword: this.searchForm.keyword
       })
         .then(res => {
           if (res.data.ret === 0) {
@@ -204,9 +205,9 @@ export default {
         })
     },
     createHandler () {
-      createTodo(this.noticeInfo).then(resData => {
+      createNotice(this.noticeInfo).then(resData => {
         if (resData.data.ret === 0) {
-          this.readTodoList()
+          this.readNoticeList()
           this.$Message.success('操作成功')
           this.noticeInfo = {}
           this.showCreate = false
@@ -216,38 +217,27 @@ export default {
       })
     },
     searchHandler () {
-      this.readTodoList()
+      this.readNoticeList()
     },
-    deleteHandler (id, status) {
-      deleteTodoById(id, status).then(resData => {
+    deleteHandler (id, dataStatus) {
+      deleteNoticeById(id, dataStatus).then(resData => {
         if (resData.data.ret === 0) {
           this.$Message.success('操作成功')
-          this.readTodoList()
+          this.readNoticeList()
         } else {
           this.$Message.success(resData.data.msg)
         }
       })
     },
     updateHandler () {
-      updateTodoById(this.noticeInfo).then(resData => {
+      updateNoticeById(this.noticeInfo).then(resData => {
         if (resData.data.ret === 0) {
           this.$Message.success('操作成功')
           this.noticeInfo = {}
           this.showUpdate = false
-          this.readTodoList()
+          this.readNoticeList()
         } else {
           this.$Message.success(resData.data.msg)
-        }
-      })
-    },
-    readGroupList () {
-      readGroupList({
-        limit: 20,
-        offset: 1,
-        type: 2
-      }).then(resData => {
-        if (resData.data.ret === 0) {
-          this.groupList = resData.data.rows
         }
       })
     }
