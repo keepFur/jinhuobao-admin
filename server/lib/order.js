@@ -21,7 +21,22 @@ class Order {
           ret: 0,
           msg: '',
           total: total.total,
-          rows: resData
+          rows: [{
+            num: '123123123',
+            star: 0,
+            store: '之间',
+            remark: '没事',
+            arrivedDate: '2019-29-20',
+            goods: [12, 12, 12],
+            count: 10,
+            status: 1,
+            paymethod: 1,
+            paySerialNum: '123123123123',
+            totalPrice: 1000,
+            discountPrice: 100,
+            actualPrice: 900,
+            runPrice: 0
+          }] || resData
         })
       })
     }).catch(err => {

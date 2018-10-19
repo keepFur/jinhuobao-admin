@@ -2,9 +2,30 @@
   <div>
     <Card>
         <Form ref="searchForm" :model="searchForm"  inline>
-            <FormItem prop="user">
-                <i-input type="text" style="width:400px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索">
+            <FormItem>
+                <i-input type="text" style="width:200px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索,支持订单号">
                 </i-input>
+            </FormItem>
+            <FormItem>
+               <Select v-model="searchForm.star" style="width:200px;" placeholder="选择是否关注" clearable>
+                    <Option value="1">关注</Option>
+                    <Option value="0">未关注</Option>
+                </Select>
+            </FormItem>
+            <FormItem>
+               <Select v-model="searchForm.paymethod" style="width:200px;" placeholder="选择付款方式" clearable>
+                    <Option value="1">线上</Option>
+                    <Option value="2">线下</Option>
+                </Select>
+            </FormItem>
+            <FormItem>
+               <Select v-model="searchForm.status" style="width:200px;" placeholder="选择订单状态" clearable>
+                    <Option value="1">待支付</Option>
+                    <Option value="2">待配送</Option>
+                    <Option value="3">配送中</Option>
+                    <Option value="4">已完成</Option>
+                    <Option value="5">已取消</Option>
+                </Select>
             </FormItem>
             <FormItem>
                 <Button  @click="searchHandler('formInline')">搜索</Button>
@@ -24,15 +45,19 @@
 </template>
 
 <script>
-import { readBlogList, deleteBlogById } from '@/api/blog'
+import { readOrderList, deleteOrderById } from '@/api/order'
 import { mapMutations } from 'vuex'
+const orderStatus = ['待支付', '待配送', '配送中', '已完成', '已取消']
 export default {
   name: 'order_list_page',
   components: {},
   data () {
     return {
       searchForm: {
-        keyword: ''
+        keyword: '',
+        star: '',
+        status: '',
+        paymethod: ''
       },
       columns: [
         {
@@ -49,44 +74,54 @@ export default {
         },
         {
           title: '支付流水号',
-          key: 'title',
+          key: 'paySerialNum',
           width: 150
         },
         {
           title: '商家',
-          key: 'groupName',
+          key: 'store',
           width: 150
         },
         {
           title: '送达时间',
-          key: 'author',
+          key: 'arrivedDate',
           width: 150
         },
         {
           title: '数量',
-          key: 'title',
+          key: 'count',
           width: 150
         },
 
         {
           title: '总金额/优惠金额/实际支付金额/运费',
           key: 'groupName',
-          width: 250
+          width: 250,
+          render: (h, params) => {
+            let row = params.row
+            return h(
+              'span',
+              `${row.totalPrice}/${row.discountPrice}/${row.actualPrice}/${
+                row.runPrice
+              }`
+            )
+          }
         },
         {
           title: '支付方式',
-          key: '',
-          width: 150
-        },
-        {
-          title: '送达时间',
-          key: 'author',
-          width: 150
+          key: 'paymethod',
+          width: 150,
+          render: (h, params) => {
+            return h('span', params.row.paymethod === 1 ? '线上' : '线下')
+          }
         },
         {
           title: '状态',
           width: 150,
-          key: 'status'
+          key: 'status',
+          render: (h, parmas) => {
+            return h('span', orderStatus[params.row.status - 1])
+          }
         },
         {
           title: '日期',
@@ -96,29 +131,43 @@ export default {
         },
         {
           title: '备注',
-          key: '',
+          key: 'remark',
           width: 150
         },
         {
           title: '数据状态',
-          key: 'status',
+          key: 'dataStatus',
           width: 150,
           render: (h, params) => {
             return h(
               'span',
               {
                 style: {
-                  color: params.row.status === 1 ? '#5cadff' : '#ed4014'
+                  color: params.row.dataStatus === 1 ? '#5cadff' : '#ed4014'
                 }
               },
-              params.row.status === 1 ? '启用' : '禁用'
+              params.row.dataStatus === 1 ? '启用' : '禁用'
             )
+          }
+        },
+        {
+          title: '关注',
+          key: 'star',
+          width: 80,
+          render: (h, params) => {
+            return h('Icon', {
+              props: {
+                size: 24,
+                color: params.row.star === 1 ? '#ff9900' : '',
+                type: params.row.star === 1 ? 'ios-star' : 'ios-star-outline'
+              }
+            })
           }
         },
         {
           title: '操作',
           key: 'actions',
-          width: 250,
+          width: 300,
           align: 'center',
           fixed: 'right',
           render: (h, params) => {
@@ -184,16 +233,37 @@ export default {
                     type: 'default',
                     size: 'small'
                   },
+                  style: {
+                    marginRight: '8px'
+                  },
                   on: {
                     click: () => {
                       this.deleteHandler(
                         params.row.id,
-                        params.row.status === 1 ? 0 : 1
+                        params.row.dataStatus === 1 ? 0 : 1
                       )
                     }
                   }
                 },
-                params.row.status === 1 ? '禁用' : '启用'
+                params.row.dataStatus === 1 ? '禁用' : '启用'
+              ),
+              h(
+                'Button',
+                {
+                  props: {
+                    type: 'default',
+                    size: 'small'
+                  },
+                  on: {
+                    click: () => {
+                      this.deleteHandler(
+                        params.row.id,
+                        params.row.star === 1 ? 0 : 1
+                      )
+                    }
+                  }
+                },
+                params.row.star === 1 ? '取关' : '关注'
               )
             ])
           }
@@ -206,21 +276,21 @@ export default {
   watch: {
     $route (to, from) {
       if (
-        to.name === 'list_blog_page' &&
-        (from.name === 'edit_blog_page' || from.name === 'create_blog_page')
+        to.name === 'list_order_page' &&
+        (from.name === 'edit_order_page' || from.name === 'create_order_page')
       ) {
-        this.readBlogList()
+        this.readOrderList()
       }
     }
   },
   created () {
-    this.readBlogList()
+    this.readOrderList()
   },
   methods: {
     ...mapMutations(['addTag']),
     changePage () {},
-    readBlogList () {
-      readBlogList({
+    readOrderList () {
+      readOrderList({
         limit: 20,
         offset: 1,
         keyword: this.searchForm.keyword,
@@ -239,19 +309,19 @@ export default {
         })
     },
     searchHandler () {
-      this.readBlogList()
+      this.readOrderList()
     },
     printHandler () {
       this.$Message.success('操作成功')
     },
     viewHandler (id, title) {
       const route = {
-        name: 'view_blog_page',
+        name: 'view_order_page',
         params: {
           id
         },
         meta: {
-          title: `浏览博客-${title}`
+          title: `浏览订单-${title}`
         }
       }
       this.addTag({
@@ -261,10 +331,10 @@ export default {
       this.$router.push(route)
     },
     deleteHandler (id, status) {
-      deleteBlogById(id, status).then(resData => {
+      deleteOrderById(id, status).then(resData => {
         if (resData.data.ret === 0) {
           this.$Message.success('操作成功')
-          this.readBlogList()
+          this.readOrderList()
         } else {
           this.$Message.success(resData.data.msg)
         }
@@ -272,12 +342,12 @@ export default {
     },
     editHandler (id, title) {
       const route = {
-        name: 'edit_blog_page',
+        name: 'edit_order_page',
         params: {
           id
         },
         meta: {
-          title: `编辑博客-${title}`
+          title: `编辑订单-${title}`
         }
       }
       this.addTag({

@@ -27,7 +27,7 @@ module.exports = class Order {
   readOrderList (query) {
     let limit = Number(query.limit || 20)
     let offset = Number(query.offset - 1) * limit
-    let cmdText = `SELECT id,num,store,arrived_date,goods,count,status,paymethod,pay_serial_num,total_price,discount_price,actual_price,run_price,remark,star, data_status AS dataStatus, create_date AS createDate,update_date AS updateDate FROM jinhuobao_admin_order  WHERE 1=1`
+    let cmdText = `SELECT id,num,store,arrived_date AS arrivedDate,goods,count,status,paymethod,pay_serial_num AS paySerialNum,total_price AS totalPrice,discount_price AS discountPrice,actual_price AS actualPrice,run_price AS runPrice,remark,star, data_status AS dataStatus, create_date AS createDate,update_date AS updateDate FROM jinhuobao_admin_order  WHERE 1=1`
     let cmdParams = []
     if (query.keyword) {
       cmdText += ` AND (num LIKE '%${query.keyword}%' OR remark LIKE '%${query.keyword}%')`
