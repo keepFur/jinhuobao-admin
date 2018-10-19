@@ -3,8 +3,17 @@
     <Card>
         <Form ref="searchForm" :model="searchForm"  inline>
             <FormItem prop="user">
-                <i-input type="text" style="width:400px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索">
+                <i-input type="text" style="width:200px;" clearable v-model="searchForm.keyword" placeholder="输入关键字搜索，支持名称和内容">
                 </i-input>
+            </FormItem>
+            <FormItem>
+                <Select v-model="searchForm.type" style="width:200px;" clearable>
+                    <Option value="1">紧急</Option>
+                    <Option value="2">重要</Option>
+                    <Option value="3">紧急重要</Option>
+                    <Option value="4">紧急不重要</Option>
+                    <Option value="5">重要不紧急</Option>
+                </Select>
             </FormItem>
             <FormItem>
                 <Button  @click="searchHandler('formInline')">搜索</Button>
@@ -27,7 +36,7 @@
         @on-cancel="showCreate=false">
         <Form :model="todoInfo" :label-width="80">
             <FormItem label="分类">
-                <Select v-model="todoInfo.type">
+                <Select v-model="todoInfo.type" clearable>
                     <Option value="1">紧急</Option>
                     <Option value="2">重要</Option>
                     <Option value="3">紧急重要</Option>
@@ -36,7 +45,7 @@
                 </Select>
             </FormItem>
             <FormItem label="名称">
-                <Input v-model="todoInfo.title" />
+                <Input v-model="todoInfo.name" />
             </FormItem>
             <FormItem label="内容">
                 <Input v-model="todoInfo.content" type="textarea" :autosize="{minRows: 2,maxRows: 5}" />
@@ -50,7 +59,7 @@
         @on-cancel="showUpdate=false">
         <Form :model="todoInfo" :label-width="80">
             <FormItem label="分类">
-                 <Select v-model="todoInfo.type">
+                 <Select v-model="todoInfo.type" clearable>
                     <Option value="1">紧急</Option>
                     <Option value="2">重要</Option>
                     <Option value="3">紧急重要</Option>
@@ -77,28 +86,28 @@ import {
   updateTodoById,
   deleteTodoById
 } from '@/api/todo'
-import { readGroupList } from '@/api/group'
+const types = ['', '紧急', '重要', '紧急重要', '紧急不重要', '重要不紧急']
 export default {
   name: 'todo_list_page',
   components: {},
   data () {
     return {
       searchForm: {
-        keyword: ''
+        keyword: '',
+        type: ''
       },
-      groupList: [],
+
       showCreate: false,
       showUpdate: false,
       todoInfo: {
         name: '',
         content: '',
-        type: '',
-        groupId: 1
+        type: ''
       },
       columns: [
         {
           title: '名称',
-          key: 'title'
+          key: 'name'
         },
         {
           title: '内容',
@@ -106,32 +115,35 @@ export default {
         },
         {
           title: '分类',
-          key: 'groupName'
+          key: 'type',
+          render: (h, params) => {
+            return h('span', types[params.row.type])
+          }
         },
         {
           title: '日期',
-          key: 'createdDate',
+          key: 'createDate',
           sortable: true
         },
         {
           title: '状态',
-          key: 'status',
+          key: 'dataStatus',
           render: (h, params) => {
             return h(
               'span',
               {
                 style: {
-                  color: params.row.status === 1 ? '#5cadff' : '#ed4014'
+                  color: params.row.dataStatus === 1 ? '#5cadff' : '#ed4014'
                 }
               },
-              params.row.status === 1 ? '已完成' : '未完成'
+              params.row.dataStatus === 1 ? '已完成' : '未完成'
             )
           }
         },
         {
           title: '操作',
           key: 'actions',
-          width: 250,
+          width: 200,
           align: 'center',
           render: (h, params) => {
             return h('div', [
@@ -171,12 +183,12 @@ export default {
                     click: () => {
                       this.deleteHandler(
                         params.row.id,
-                        params.row.status === 1 ? 0 : 1
+                        params.row.dataStatus === 1 ? 0 : 1
                       )
                     }
                   }
                 },
-                params.row.status === 1 ? '未完成' : '已完成'
+                params.row.dataStatus === 1 ? '未完成' : '已完成'
               )
             ])
           }
@@ -188,7 +200,6 @@ export default {
   },
   created () {
     this.readTodoList()
-    this.readGroupList()
   },
   methods: {
     changePage () {},
@@ -197,7 +208,7 @@ export default {
         limit: 20,
         offset: 1,
         keyword: this.searchForm.keyword,
-        isSuper: 1
+        type: this.searchForm.type
       })
         .then(res => {
           if (res.data.ret === 0) {
@@ -245,17 +256,6 @@ export default {
           this.readTodoList()
         } else {
           this.$Message.success(resData.data.msg)
-        }
-      })
-    },
-    readGroupList () {
-      readGroupList({
-        limit: 20,
-        offset: 1,
-        type: 2
-      }).then(resData => {
-        if (resData.data.ret === 0) {
-          this.groupList = resData.data.rows
         }
       })
     }

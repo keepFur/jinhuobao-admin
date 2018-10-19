@@ -43,7 +43,7 @@ module.exports = {
     },
     proxy: {
       '/api': {
-        target: 'http://172.20.26.220:3000',
+        target: 'http://172.20.26.143:3000',
         changeOrigin: true // 是否跨域
       }
     }
