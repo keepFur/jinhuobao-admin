@@ -4,11 +4,11 @@ module.exports = class Notice {
     this.pool = pool
   }
   createNotice (body) {
-    let cmdText = `INSERT INTO jinhuobao_admin_notice (name,content,range,remark,create_date) VALUES (?,?,?,?,?)`
+    let cmdText = `INSERT INTO jinhuobao_admin_notice (name,content,use_range,remark,create_date) VALUES (?,?,?,?,?)`
     let cmdParams = []
     cmdParams.push(body.name)
     cmdParams.push(body.content)
-    cmdParams.push(body.range)
+    cmdParams.push(body.useRange)
     cmdParams.push(body.remark)
     cmdParams.push(util.formatDate('yyyy-mm-dd hh:MM:ss'))
     return util.return_promise(this.pool, cmdText, cmdParams)
@@ -17,12 +17,12 @@ module.exports = class Notice {
   readNoticeList (query) {
     let limit = Number(query.limit || 20)
     let offset = Number(query.offset - 1) * limit
-    let cmdText = `SELECT id,name, content, range, remark,status,data_status AS dataStatus,create_date AS createDate,update_date AS updateDate FROM jinhuobao_admin_notice  WHERE 1=1`
+    let cmdText = `SELECT id,name, content,use_range AS useRange,remark,status,data_status AS dataStatus,create_date AS createDate,update_date AS updateDate FROM jinhuobao_admin_notice  WHERE 1=1`
     let cmdParams = []
     if (query.keyword) {
       cmdText += ` AND (name LIKE '%${query.keyword}%' OR content LIKE '%${query.keyword}%')`
     }
-    cmdText += ` ORDER BY created_date DESC LIMIT ?,?`
+    cmdText += ` ORDER BY create_date DESC LIMIT ?,?`
     cmdParams.push(offset, limit)
     return util.return_promise(this.pool, cmdText, cmdParams)
   }
@@ -37,7 +37,7 @@ module.exports = class Notice {
   }
 
   readNoticeById (query) {
-    let cmdText = `SELECT id,name, content, range, remark,status,data_status AS dataStatus,create_date AS createDate,update_date AS updateDate FROM jinhuobao_admin_notice  WHERE id = ?`
+    let cmdText = `SELECT id,name, content, use_range AS useRange, remark,status,data_status AS dataStatus,create_date AS createDate,update_date AS updateDate FROM jinhuobao_admin_notice  WHERE id = ?`
     let cmdParams = [Number(query.id)]
     return util.return_promise(this.pool, cmdText, cmdParams)
   }
@@ -53,9 +53,13 @@ module.exports = class Notice {
       cmdText += `, content = ?`
       cmdParams.push(body.content)
     }
-    if (body.range) {
-      cmdText += `, range = ?`
-      cmdParams.push(body.range)
+    if (body.remark) {
+      cmdText += `, remark = ?`
+      cmdParams.push(body.remark)
+    }
+    if (body.useRange) {
+      cmdText += `, use_range = ?`
+      cmdParams.push(body.useRange)
     }
     cmdText += `,update_date = ?`
     cmdParams.push(new Date())

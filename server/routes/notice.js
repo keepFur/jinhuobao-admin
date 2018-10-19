@@ -14,9 +14,6 @@ router.post('/create_notice', function (req, res, next) {
 // 读取通知,支持分页
 router.get('/read_notice_list', function (req, res, next) {
   try {
-    res.header('Access-Control-Allow-Origin', '*')
-    // res.header('Access-Control-Allow-Methods', '*');
-    // res.header('Content-Type', 'application/json;charset=utf-8');
     notice.readNoticeList(req, res)
   } catch (error) {
     util.log(error.message)
